@@ -1,54 +1,79 @@
-// lib/axiosClient.ts
 import axios from "axios";
-
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
-  withCredentials: true, // sends httpOnly cookies automatically
-});
-
-// 🔹 Response Interceptor for 401 (auto refresh)
-let isRefreshing = false;
-let failedQueue: any[] = [];
-
-const processQueue = (error: any) => {
-  failedQueue.forEach(({ reject, resolve }) => {
-    if (error) reject(error);
-    else resolve();
-  });
-  failedQueue = [];
+import type { AxiosInstance, AxiosResponse } from "axios";
+import { toast } from "sonner";
+let state: any;
+export const storeInit = (_store: any) => {
+  state = _store;
 };
 
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL_PROD || process.env.NEXT_PUBLIC_BASE_URL_DEV;
+const api: AxiosInstance = axios.create({
+  baseURL: BASE_URL,
+  timeout: 15000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
+api.interceptors.request.use(
+  (config: any) => {
+    const token = state.auth?.accessToken || config.headers.Authorization;
+    console.log("Requesting:", config.url, token);
+
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    // toast.error("❌ Request setup failed");
+    return Promise.reject(error);
+  }
+);
+
+// ⚡ Handle all API errors globally
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  (response: AxiosResponse) => response,
+  (error) => {
+    if (!error.response) {
+      // Network error / timeout
+      // toast.error("⚠️ Network error — please check your connection");
+      return Promise.reject(error);
+    }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise<void>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(() => api(originalRequest));
-      }
+    const { status, data } = error.response;
+    const message =
+      data?.message ||
+      data?.error ||
+      "An unexpected error occurred. Please try again.";
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+    switch (status) {
+      case 400:
+        // toast.error(`Bad Request: ${message}`);
+        break;
 
-      try {
-        // Call your refresh endpoint; server sets new httpOnly cookie
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
+      case 401:
+        toast.error(`Unauthorized: ${message}`);
+        // store.dispatch(logoutUser());
+        break;
 
-        processQueue(null);
-        return api(originalRequest);
-      } catch (err) {
-        processQueue(err);
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
+      case 403:
+        // toast.error("You don't have permission to perform this action");
+        break;
+
+      case 404:
+        // toast.error("Requested resource not found");
+        break;
+
+      case 500:
+        // toast.error("Internal Server Error — please try later");
+        break;
+
+      default:
+      // toast.error(`Error (${status}): ${message}`);
     }
 
     return Promise.reject(error);

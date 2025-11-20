@@ -22,5 +22,5 @@ export const createAuthSlice: StateCreator<AuthSlice> = (set) => ({
 
   login: (accessToken, user) =>
     set({ accessToken, user, isAuthenticated: true }),
-  logout: () => set({ user: null, isAuthenticated: false }),
+  logout: () => set({ user: null, isAuthenticated: false, accessToken: null }),
 });

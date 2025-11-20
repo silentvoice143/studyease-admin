@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { createAuthSlice, AuthSlice } from "./slices/authSlice";
 
-// 👇 Define combined store type
+// 👇 Define cm{bined store type
 type AppState = AuthSlice;
 
 // ✅ Helper for SSR safety (Next.js)

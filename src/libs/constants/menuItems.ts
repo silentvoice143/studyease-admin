@@ -29,21 +29,9 @@ export const sidebarItems = [
     ],
   },
   {
-    id: "invoices",
-    label: "Invoices",
+    id: "streams",
+    label: "Streams",
     icon: FileText,
-    href: "/invoices",
-  },
-  {
-    id: "wallet",
-    label: "Wallet",
-    icon: Wallet,
-    href: "/wallet",
-  },
-  {
-    id: "notification",
-    label: "Notification",
-    icon: Bell,
-    href: "/notification",
+    href: "/streams",
   },
 ];

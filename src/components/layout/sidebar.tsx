@@ -200,8 +200,8 @@ const Sidebar = () => {
       {/* Toggle Drawer Button */}
       <button
         onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-        className={`hidden md:flex fixed top-12 -translate-y-1/2 z-[60] p-1.5 bg-gray-800 rounded-full shadow-xl border-2 border-gray-700 transition-all duration-300 hover:scale-110 ${
-          isDrawerOpen ? "left-[276px]" : "left-[68px]"
+        className={`hidden md:flex fixed top-10 -translate-y-1/2 z-[60] p-1.5 bg-gray-800 rounded-full shadow-xl border-2 border-gray-700 transition-all duration-300 hover:scale-110 ${
+          isDrawerOpen ? "left-[274px]" : "left-[68px]"
         }`}
       >
         {isDrawerOpen ? (

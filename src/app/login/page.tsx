@@ -23,7 +23,8 @@ export default function LoginPage() {
 
     try {
       const data = await login({ email, password });
-      if (data) {
+
+      if (data.success) {
         console.log(data, "----data");
         setLogin(data.accessToken, data.user);
 
@@ -31,8 +32,8 @@ export default function LoginPage() {
           router.replace("/dashboard");
         }, 5000);
       }
-    } catch (err) {
-      setError("Network error. Please try again.");
+    } catch (err: any) {
+      setError(err.message || err.response.data.message);
     } finally {
       setLoading(false);
     }

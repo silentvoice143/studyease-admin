@@ -3,15 +3,16 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
-  const refreshToken = req.cookies.get("refreshToken")?.value;
+  // const refreshToken = req.cookies.get("refreshToken")?.value;
   const pathname = req.nextUrl.pathname;
+  console.log("running---", pathname, accessToken);
 
   // ----------------------
   // Protected routes: /dashboard/*
   // ----------------------
   if (pathname.startsWith("/dashboard")) {
     // If no accessToken and no refreshToken, redirect to login
-    if (!accessToken && !refreshToken) {
+    if (!accessToken) {
       const loginUrl = new URL("/login", req.url);
       return NextResponse.redirect(loginUrl);
     }

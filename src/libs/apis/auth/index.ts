@@ -8,9 +8,8 @@ export async function login({
   email: string;
   password: string;
 }) {
-  const { data } = await api.post("/auth/login", { email, password });
-
-  return data;
+  const res = await api.post("/auth/login", { email, password });
+  return res.data;
 }
 
 export async function refreshAccessToken(): Promise<string> {
@@ -18,7 +17,7 @@ export async function refreshAccessToken(): Promise<string> {
   return data.accessToken;
 }
 
-export async function logout() {
-  await api.post("/auth/logout");
-  return true;
+export async function logoutUser() {
+  const res = await api.post("/auth/logout");
+  return res.data;
 }
