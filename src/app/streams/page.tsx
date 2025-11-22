@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,64 +19,126 @@ import {
 import { Plus, ExternalLink } from "lucide-react";
 import PageWithSidebar from "@/components/layout/pageWithSidebar";
 import { StreamsTable } from "./_components/streamTable";
-
-// Mock data - replace with actual API call
-const mockStreams = [
-  { id: 1, name: "Computer Science", totalSemesters: 8, subjectCount: 42 },
-  {
-    id: 2,
-    name: "Mechanical Engineering",
-    totalSemesters: 8,
-    subjectCount: 38,
-  },
-  { id: 3, name: "Civil Engineering", totalSemesters: 8, subjectCount: 36 },
-  {
-    id: 4,
-    name: "Electrical Engineering",
-    totalSemesters: 8,
-    subjectCount: 40,
-  },
-  {
-    id: 5,
-    name: "Electronics & Communication",
-    totalSemesters: 8,
-    subjectCount: 39,
-  },
-  {
-    id: 6,
-    name: "Business Administration",
-    totalSemesters: 6,
-    subjectCount: 32,
-  },
-  {
-    id: 7,
-    name: "Information Technology",
-    totalSemesters: 8,
-    subjectCount: 41,
-  },
-  { id: 8, name: "Chemical Engineering", totalSemesters: 8, subjectCount: 35 },
-  { id: 9, name: "Architecture", totalSemesters: 10, subjectCount: 45 },
-  { id: 10, name: "Biotechnology", totalSemesters: 8, subjectCount: 37 },
-];
+import CreateStreamModal from "./_components/createStreamModal";
+import {
+  deleteStream,
+  editStream,
+  getStreams,
+  postStreams,
+} from "@/libs/apis/stream";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { ConfirmDeleteModal } from "@/components/common/confirmDelete";
+import EditStreamModal from "./_components/editStreamModal";
 
 function Streams() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [streams, setStreams] = useState<any[]>([]);
+  const [loadingSream, setLoadingStream] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  });
 
-  const totalPages = Math.ceil(mockStreams.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentStreams = mockStreams.slice(startIndex, endIndex);
+  const [toggleCreateModal, setToggleCreateModal] = useState(false);
+  const [toggleEditModal, setToggleEditModal] = useState<null | {
+    id: number;
+    name: string;
+    totalSemesters: number;
+  }>(null);
+  const [toggleDeleteModal, setToggleDeleteModal] = useState<null | number>(
+    null
+  );
 
-  const handleAddStream = () => {
-    console.log("Add new stream");
-    // Add your logic to open a modal or navigate to add stream page
+  const route = useRouter();
+
+  const handleEditStream = async (body: any) => {
+    console.log(body, "----body");
+    try {
+      setSaving(true);
+      const data = await editStream({ id: toggleEditModal?.id, data: body });
+
+      if (data.success) {
+        toast.success("Stream updated successfully");
+        getStreamsData(pagination.page, pagination.limit, true);
+        setToggleEditModal(null);
+      } else {
+        toast.error(data?.message);
+      }
+    } catch (err) {
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleDeleteStream = async (id: any) => {
+    try {
+      setSaving(true);
+      const data = await deleteStream(id);
+
+      if (data.success) {
+        toast.success("Stream deleted successfully");
+        getStreamsData(pagination.page, pagination.limit, true);
+        setToggleDeleteModal(null);
+      } else {
+        toast.error(data?.message);
+      }
+    } catch (err) {
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleExplore = (streamId: number) => {
-    console.log("Explore stream:", streamId);
-    // Add your navigation logic here
+  const handleAddStream = async (body: any) => {
+    try {
+      setSaving(true);
+      const data = await postStreams(body);
+
+      if (data.success) {
+        toast.success("Stream added successfully");
+        getStreamsData(pagination.page, pagination.limit, true);
+        setToggleCreateModal(false);
+      } else {
+        toast.error(data?.message);
+      }
+    } catch (err) {
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const getStreamsData = async (
+    page = 1,
+    limit = 10,
+    silent = false,
+    search = ""
+  ) => {
+    if (page > pagination.totalPages || loadingSream) return;
+    if (!silent) {
+      setLoadingStream(true);
+    }
+    try {
+      const data: any = await getStreams(page, limit);
+
+      if (data.success) {
+        setPagination({
+          page: data.page,
+          total: data.total,
+          totalPages: data.totalPages,
+          limit: data.limit,
+        });
+        setStreams(data.streams);
+      }
+    } catch (err: any) {
+    } finally {
+      setLoadingStream(false);
+    }
+  };
+
+  useEffect(() => {
+    getStreamsData(1, 10);
+  }, []);
 
   return (
     <PageWithSidebar>
@@ -90,7 +152,9 @@ function Streams() {
               </CardDescription>
             </div>
             <Button
-              onClick={handleAddStream}
+              onClick={() => {
+                setToggleCreateModal(true);
+              }}
               className="gap-2 bg-gradient-to-r from-orange-500 to-orange-600"
             >
               <Plus className="h-4 w-4" />
@@ -98,10 +162,48 @@ function Streams() {
             </Button>
           </CardHeader>
           <CardContent>
-            <StreamsTable />
+            <StreamsTable
+              data={streams}
+              onItemsPerPageChange={(limit) => {
+                getStreamsData(pagination.page, limit);
+              }}
+              onPageChange={(page) => getStreamsData(page, pagination.limit)}
+              onDelete={(id: number) => {
+                setToggleDeleteModal(id);
+              }}
+              onEdit={(item: any) => {
+                setToggleEditModal(item);
+              }}
+              onExplore={(id: number) => {
+                route.push(`/streams/${id}`);
+              }}
+              totalCount={pagination.total}
+              itemsPerPage={pagination.limit}
+              totalPages={pagination.totalPages}
+              currentPage={pagination.page}
+            />
           </CardContent>
         </Card>
       </div>
+      <CreateStreamModal
+        isOpen={toggleCreateModal}
+        onClose={() => setToggleCreateModal(false)}
+        onSubmit={handleAddStream}
+        isSaving={saving}
+      />
+      <EditStreamModal
+        isOpen={!!toggleEditModal}
+        onClose={() => setToggleEditModal(null)}
+        onSubmit={handleEditStream}
+        item={toggleEditModal}
+        isSaving={saving}
+      />
+      <ConfirmDeleteModal
+        isOpen={!!toggleDeleteModal}
+        onClose={() => setToggleDeleteModal(null)}
+        onConfirm={() => handleDeleteStream(toggleDeleteModal)}
+        loading={saving}
+      />
     </PageWithSidebar>
   );
 }

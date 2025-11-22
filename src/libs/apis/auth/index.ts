@@ -12,10 +12,10 @@ export async function login({
   return res.data;
 }
 
-export async function refreshAccessToken(): Promise<string> {
-  const { data } = await api.post("/auth/refresh"); // refresh_token comes from httpOnly cookie
-  return data.accessToken;
-}
+// export async function refreshAccessToken(): Promise<string> {
+//   const { data } = await api.post("/auth/refresh"); // refresh_token comes from httpOnly cookie
+//   return data.accessToken;
+// }
 
 export async function logoutUser() {
   const res = await api.post("/auth/logout");

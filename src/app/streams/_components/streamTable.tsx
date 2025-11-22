@@ -27,7 +27,7 @@ interface Stream {
 
 interface StreamsTableProps {
   data: Stream[];
-  onEdit: (id: number) => void;
+  onEdit: (item: any) => void;
   onDelete: (id: number) => void;
   onExplore: (id: number) => void;
   currentPage?: number;
@@ -39,47 +39,8 @@ interface StreamsTableProps {
   loading?: { delete: boolean };
 }
 
-// Mock data - replace with actual API call
-const mockStreams = [
-  { id: 1, name: "Computer Science", totalSemesters: 8, subjectCount: 42 },
-  {
-    id: 2,
-    name: "Mechanical Engineering",
-    totalSemesters: 8,
-    subjectCount: 38,
-  },
-  { id: 3, name: "Civil Engineering", totalSemesters: 8, subjectCount: 36 },
-  {
-    id: 4,
-    name: "Electrical Engineering",
-    totalSemesters: 8,
-    subjectCount: 40,
-  },
-  {
-    id: 5,
-    name: "Electronics & Communication",
-    totalSemesters: 8,
-    subjectCount: 39,
-  },
-  {
-    id: 6,
-    name: "Business Administration",
-    totalSemesters: 6,
-    subjectCount: 32,
-  },
-  {
-    id: 7,
-    name: "Information Technology",
-    totalSemesters: 8,
-    subjectCount: 41,
-  },
-  { id: 8, name: "Chemical Engineering", totalSemesters: 8, subjectCount: 35 },
-  { id: 9, name: "Architecture", totalSemesters: 10, subjectCount: 45 },
-  { id: 10, name: "Biotechnology", totalSemesters: 8, subjectCount: 37 },
-];
-
 export const StreamsTable: React.FC<StreamsTableProps> = ({
-  data = mockStreams,
+  data,
   onEdit,
   onDelete,
   onExplore,
@@ -115,9 +76,6 @@ export const StreamsTable: React.FC<StreamsTableProps> = ({
           <table className="w-full">
             <thead className="bg-gradient-to-r from-slate-50 to-slate-100/80 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-[10%]">
-                  ID
-                </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-[35%]">
                   Stream Name
                 </th>
@@ -138,13 +96,6 @@ export const StreamsTable: React.FC<StreamsTableProps> = ({
                   key={`${stream?.id}-${index}`}
                   className="hover:bg-slate-50/80 transition-colors duration-200"
                 >
-                  {/* ID */}
-                  <td className="px-6 py-4 break-words">
-                    <div className="font-semibold text-slate-900 text-sm">
-                      {stream?.id}
-                    </div>
-                  </td>
-
                   {/* Stream Info */}
                   <td className="px-6 py-4 break-words">
                     <div className="flex items-center gap-3">
@@ -193,7 +144,7 @@ export const StreamsTable: React.FC<StreamsTableProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onEdit?.(stream?.id)}
+                        onClick={() => onEdit?.(stream)}
                         className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200"
                         title="Edit Stream"
                       >
@@ -220,7 +171,7 @@ export const StreamsTable: React.FC<StreamsTableProps> = ({
                           </DropdownMenuItem>
 
                           <DropdownMenuItem
-                            onClick={() => onEdit?.(stream?.id)}
+                            onClick={() => onEdit?.(stream)}
                             className="cursor-pointer"
                           >
                             <Edit3 className="w-4 h-4 mr-2" />
@@ -274,7 +225,6 @@ export const StreamsTable: React.FC<StreamsTableProps> = ({
                   <div className="font-semibold text-slate-900 text-sm">
                     {stream?.name || "N/A"}
                   </div>
-                  <div className="text-xs text-slate-600">ID: {stream?.id}</div>
                 </div>
               </div>
 
