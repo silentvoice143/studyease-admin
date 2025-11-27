@@ -84,7 +84,7 @@ const MenuItem = ({
 
       {hasChildren && isOpen && (
         <div className="mt-1 space-y-1">
-          {item.children.map((child) => (
+          {item?.children?.map((child) => (
             <MenuItem
               key={child.id}
               item={child}
