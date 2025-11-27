@@ -28,9 +28,9 @@ export default function LoginPage() {
         console.log(data, "----data");
         setLogin(data.accessToken, data.user);
 
-        setTimeout(() => {
-          router.replace("/dashboard");
-        }, 5000);
+        // setTimeout(() => {
+        //   router.replace("/dashboard");
+        // }, 5000);
       }
     } catch (err: any) {
       setError(err.message || err.response.data.message);
