@@ -27,14 +27,22 @@ export default function LoginPage() {
       if (data.success) {
         console.log(data, "----data");
         setLogin(data.accessToken, data.user);
+        await fetch("/api/auth/set-tokens", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          }),
+        });
 
-        // setTimeout(() => {
-        //   router.replace("/dashboard");
-        // }, 5000);
+        setTimeout(() => {
+          router.replace("/dashboard");
+          setLoading(false);
+        }, 5000);
       }
     } catch (err: any) {
       setError(err.message || err.response.data.message);
-    } finally {
       setLoading(false);
     }
   };

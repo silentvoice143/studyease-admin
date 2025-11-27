@@ -12,6 +12,10 @@ export function useLogoutLogic() {
       const data = await logoutUser(); // Backend clears cookies
       if (data.success) {
         toast.success("Logout Successfully");
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
       }
 
       logoutStore(); // Clear zustand
