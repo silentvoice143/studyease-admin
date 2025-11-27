@@ -22,7 +22,7 @@ export async function postSubject(body: any) {
   return res.data;
 }
 
-export async function deleteStream(id: string) {
+export async function deleteSubject(id: string) {
   const res = await api.delete(`${endPoint.BASE}/${id}`);
   return res.data;
 }

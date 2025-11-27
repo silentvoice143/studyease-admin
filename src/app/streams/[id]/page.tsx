@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -20,8 +20,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { SubjectTable } from "../_components/subjectTable";
-import { getSubjects, postSubject } from "@/libs/apis/subject";
+import { deleteSubject, getSubjects, postSubject } from "@/libs/apis/subject";
 import CreateSubjectModal from "../_components/createSubjectModal";
+import { ConfirmDeleteModal } from "@/components/common/confirmDelete";
 
 function Stream() {
   const params = useParams();
@@ -38,6 +39,11 @@ function Stream() {
   const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [toggleCreateModal, setToggleCreateModal] = useState(false);
+  const [toggleDeleteModal, setToggleDeleteModal] = useState<number | null>(
+    null
+  );
+
+  const route = useRouter();
 
   const getStreamById = async (body: any) => {
     try {
@@ -67,6 +73,7 @@ function Stream() {
     } catch (err) {
     } finally {
       setIsSaving(false);
+      setLoading(false);
     }
   };
 
@@ -77,9 +84,8 @@ function Stream() {
     search = ""
   ) => {
     try {
-      console.log(!streamId, loading, page, pagination.totalPages);
-      if (!streamId || loading || (page !== 1 && page > pagination.totalPages))
-        return;
+      console.log(!streamId, loading);
+      if (!streamId || loading) return;
       setLoading(true);
       const data = await getSubjects(page, limit, +streamId, semester);
       if (data.success) {
@@ -90,6 +96,22 @@ function Stream() {
     } catch (err) {
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteSubjectData = async (id: any) => {
+    try {
+      if (!toggleDeleteModal) return;
+      setIsSaving(true);
+      const data = await deleteSubject(id.toString());
+      if (data.success) {
+        getSubjectsData(1, 10, selectedSem);
+        setToggleDeleteModal(null);
+      } else {
+      }
+    } catch (err) {
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -181,10 +203,12 @@ function Stream() {
                 getSubjectsData(pagination.page, limit);
               }}
               onPageChange={(page) => getSubjectsData(page, pagination.limit)}
-              onDelete={(id: number) => {}}
+              onDelete={(id: number) => {
+                setToggleDeleteModal(id);
+              }}
               onEdit={(item: any) => {}}
               onExplore={(id: number) => {
-                // route.push(`/streams/${id}`);
+                route.push(`/streams/${id}/${id}`);
               }}
               totalCount={pagination.total}
               itemsPerPage={pagination.limit}
@@ -200,6 +224,12 @@ function Stream() {
         isSaving={isSaving}
         semesterOptions={semesterOptions}
         onSubmit={handleAddSubject}
+      />
+      <ConfirmDeleteModal
+        isOpen={!!toggleDeleteModal}
+        onClose={() => setToggleDeleteModal(null)}
+        onConfirm={() => deleteSubjectData(toggleDeleteModal)}
+        loading={isSaving}
       />
     </PageWithSidebar>
   );
